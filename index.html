@@ -91,4 +91,223 @@
         }
 
         .fs-btn {
-            position: fixed;
+            position: fixed; bottom: 85px; right: 20px; background: var(--p); color: white;
+            width: 45px; height: 45px; border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center; z-index: 2001; font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <select id="currencySelect" class="currency-selector" onchange="changeCurrency()"></select>
+    <div class="header-controls">
+        <button class="icon-btn" onclick="toggleRotation()">🔄</button>
+        <button class="icon-btn" onclick="toggleMenu()">⋮</button>
+    </div>
+</header>
+
+<div id="menu" class="menu-dropdown">
+    <div class="menu-item" onclick="toggleDarkMode()">🌙 Dark Mode</div>
+    <div class="menu-item" onclick="showTips()">💡 Pro-Tips</div>
+</div>
+
+<div id="tipsModal" class="modal" onclick="closeTips()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0">💡 Phone Pro-Tips</h3>
+        <p>• <b>Add to Home Screen:</b> Open in Chrome, tap the 3 dots, and select "Add to Home screen" for a full-app feel.</p>
+        <p>• <b>Back Gesture:</b> Swiping back exits Fullscreen mode before closing the page.</p>
+        <p>• <b>Landscape:</b> Rotate your phone for better visibility with large amounts.</p>
+        <button class="icon-btn" style="background:var(--a); width:100%; height: 50px; margin-top: 10px" onclick="closeTips()">Close</button>
+    </div>
+</div>
+
+<div id="appContainer" class="container"></div>
+<button class="fs-btn" onclick="toggleFS()">⛶</button>
+
+<div class="footer-bar">
+    <div>
+        <div style="font-size: 0.6rem; font-weight: 900; color: #64748b;" id="totalLabel">GRAND TOTAL</div>
+        <div id="grandTotal" style="font-size: 1.8rem; font-weight: 900; color: var(--s);">0.00</div>
+    </div>
+    <button style="background:#fee2e2; border:none; color:#dc2626; padding:12px 20px; border-radius:10px; font-weight:bold;" onclick="resetAll()">Reset</button>
+</div>
+
+<script>
+    const currencies = {
+        "AUD": { n: "Australia (Dollar)", s: "$", d: [
+            {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
+            {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}, {l: "50c", v: 0.5, t: 'Coin'}, {l: "20c", v: 0.2, t: 'Coin'}, {l: "10c", v: 0.1, t: 'Coin'}, {l: "5c", v: 0.05, t: 'Coin'}
+        ]},
+        "CAD": { n: "Canada (Dollar)", s: "$", d: [
+            {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
+            {l: "$2", v: 2, t: 'Coin (Toonie)'}, {l: "$1", v: 1, t: 'Coin (Loonie)'}, {l: "50¢", v: 0.5, t: 'Coin'}, {l: "25¢", v: 0.25, t: 'Coin'}, {l: "10¢", v: 0.1, t: 'Coin'}, {l: "5¢", v: 0.05, t: 'Coin'}
+        ]},
+        "USD": { n: "USA (Dollar)", s: "$", d: [
+            {l: "100", v: 100, t: 'Federal Reserve Note'}, {l: "50", v: 50, t: 'Federal Reserve Note'}, {l: "20", v: 20, t: 'Federal Reserve Note'}, {l: "10", v: 10, t: 'Federal Reserve Note'}, {l: "5", v: 5, t: 'Federal Reserve Note'}, {l: "2", v: 2, t: 'Federal Reserve Note'}, {l: "1", v: 1, t: 'Federal Reserve Note'},
+            {l: "$1", v: 1, t: 'Coin'}, {l: "50¢", v: 0.5, t: 'Coin'}, {l: "25¢", v: 0.25, t: 'Coin'}, {l: "10¢", v: 0.1, t: 'Coin'}, {l: "5¢", v: 0.05, t: 'Coin'}, {l: "1¢", v: 0.01, t: 'Coin'}
+        ]},
+        "GBP": { n: "UK (Pound)", s: "£", d: [
+            {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
+            {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}, {l: "50p", v: 0.5, t: 'Coin'}, {l: "20p", v: 0.2, t: 'Coin'}, {l: "10p", v: 0.1, t: 'Coin'}, {l: "5p", v: 0.05, t: 'Coin'}, {l: "2p", v: 0.02, t: 'Coin'}, {l: "1p", v: 0.01, t: 'Coin'}
+        ]},
+        "EUR": { n: "Eurozone (Euro)", s: "€", d: [
+            {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
+            {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}, {l: "50c", v: 0.5, t: 'Coin'}, {l: "20c", v: 0.2, t: 'Coin'}, {l: "10c", v: 0.1, t: 'Coin'}, {l: "5c", v: 0.05, t: 'Coin'}, {l: "2c", v: 0.02, t: 'Coin'}, {l: "1c", v: 0.01, t: 'Coin'}
+        ]},
+        "INR": { n: "India (Rupee)", s: "₹", d: [
+            {l: "2000", v: 2000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'},
+            {l: "20", v: 20, t: 'Coin'}, {l: "10", v: 10, t: 'Coin'}, {l: "5", v: 5, t: 'Coin'}, {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}
+        ]},
+        "MXN": { n: "Mexico (Peso)", s: "$", d: [
+            {l: "1000", v: 1000, t: 'Billete'}, {l: "500", v: 500, t: 'Billete'}, {l: "200", v: 200, t: 'Billete'}, {l: "100", v: 100, t: 'Billete'}, {l: "50", v: 50, t: 'Billete'}, {l: "20", v: 20, t: 'Billete'},
+            {l: "20", v: 20, t: 'Moneda'}, {l: "10", v: 10, t: 'Moneda'}, {l: "5", v: 5, t: 'Moneda'}, {l: "2", v: 2, t: 'Moneda'}, {l: "1", v: 1, t: 'Moneda'}, {l: "50¢", v: 0.5, t: 'Moneda'}, {l: "20¢", v: 0.2, t: 'Moneda'}
+        ]},
+        "RUB": { n: "Russia (Ruble)", s: "₽", d: [
+            {l: "5000", v: 5000, t: 'Banknote'}, {l: "2000", v: 2000, t: 'Banknote'}, {l: "1000", v: 1000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote (Rare)'},
+            {l: "10", v: 10, t: 'Coin'}, {l: "5", v: 5, t: 'Coin'}, {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}
+        ]},
+        "AED": { n: "UAE (Dirham)", s: "AED ", d: [
+            {l: "1000", v: 1000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
+            {l: "1", v: 1, t: 'Coin'}, {l: "50f", v: 0.5, t: 'Coin (Fils)'}, {l: "25f", v: 0.25, t: 'Coin (Fils)'}
+        ]},
+        "SGD": { n: "Singapore (Dollar)", s: "S$", d: [
+            {l: "10000", v: 10000, t: 'Banknote (Limited)'}, {l: "1000", v: 1000, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'}, {l: "2", v: 2, t: 'Banknote'},
+            {l: "$1", v: 1, t: 'Coin'}, {l: "50¢", v: 0.5, t: 'Coin'}, {l: "20¢", v: 0.2, t: 'Coin'}, {l: "10¢", v: 0.1, t: 'Coin'}, {l: "5¢", v: 0.05, t: 'Coin'}
+        ]},
+        "MYR": { n: "Malaysia (Ringgit)", s: "RM", d: [
+            {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'}, {l: "1", v: 1, t: 'Banknote'},
+            {l: "50s", v: 0.5, t: 'Coin (Sen)'}, {l: "20s", v: 0.2, t: 'Coin (Sen)'}, {l: "10s", v: 0.1, t: 'Coin (Sen)'}, {l: "5s", v: 0.05, t: 'Coin (Sen)'}
+        ]},
+        "PHP": { n: "Philippines (Peso)", s: "₱", d: [
+            {l: "1000", v: 1000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'},
+            {l: "20", v: 20, t: 'Coin'}, {l: "10", v: 10, t: 'Coin'}, {l: "5", v: 5, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}, {l: "25¢", v: 0.25, t: 'Coin (Sentimo)'}, {l: "5¢", v: 0.05, t: 'Coin (Sentimo)'}, {l: "1¢", v: 0.01, t: 'Coin (Sentimo)'}
+        ]},
+        "HKD": { n: "Hong Kong (Dollar)", s: "HK$", d: [
+            {l: "1000", v: 1000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "150", v: 150, t: 'Banknote (Commem.)'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'},
+            {l: "$10", v: 10, t: 'Coin'}, {l: "$5", v: 5, t: 'Coin'}, {l: "$2", v: 2, t: 'Coin'}, {l: "$1", v: 1, t: 'Coin'}, {l: "50¢", v: 0.5, t: 'Coin'}, {l: "20¢", v: 0.2, t: 'Coin'}, {l: "10¢", v: 0.1, t: 'Coin'}
+        ]},
+        "JPY": { n: "Japan (Yen)", s: "¥", d: [
+            {l: "10000", v: 10000, t: 'Banknote'}, {l: "5000", v: 5000, t: 'Banknote'}, {l: "2000", v: 2000, t: 'Banknote (Rare)'}, {l: "1000", v: 1000, t: 'Banknote'},
+            {l: "500", v: 500, t: 'Coin'}, {l: "100", v: 100, t: 'Coin'}, {l: "50", v: 50, t: 'Coin'}, {l: "10", v: 10, t: 'Coin'}, {l: "5", v: 5, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}
+        ]},
+        "CNY": { n: "China (Yuan)", s: "¥", d: [
+            {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'}, {l: "1", v: 1, t: 'Banknote'}, {l: "5角", v: 0.5, t: 'Banknote (Jiao)'}, {l: "1角", v: 0.1, t: 'Banknote (Jiao)'},
+            {l: "1元", v: 1, t: 'Coin (Yuan)'}, {l: "5角", v: 0.5, t: 'Coin (Jiao)'}, {l: "1角", v: 0.1, t: 'Coin (Jiao)'}
+        ]},
+        "SEK": { n: "Sweden (Krona)", s: "kr ", d: [
+            {l: "1000", v: 1000, t: 'Sedel'}, {l: "500", v: 500, t: 'Sedel'}, {l: "200", v: 200, t: 'Sedel'}, {l: "100", v: 100, t: 'Sedel'}, {l: "50", v: 50, t: 'Sedel'}, {l: "20", v: 20, t: 'Sedel'},
+            {l: "10", v: 10, t: 'Mynt'}, {l: "5", v: 5, t: 'Mynt'}, {l: "2", v: 2, t: 'Mynt'}, {l: "1", v: 1, t: 'Mynt'}
+        ]}
+    };
+
+    let counts = {}, curKey = "AUD";
+
+    function boot() {
+        const sel = document.getElementById('currencySelect');
+        for (let k in currencies) {
+            const o = document.createElement('option');
+            o.value = k; o.textContent = currencies[k].n;
+            sel.appendChild(o);
+        }
+        changeCurrency();
+        window.addEventListener('popstate', () => {
+            if (document.fullscreenElement) document.exitFullscreen();
+        });
+    }
+
+    function toggleMenu() {
+        const menu = document.getElementById('menu');
+        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        toggleMenu();
+    }
+
+    function showTips() {
+        document.getElementById('tipsModal').style.display = 'flex';
+        toggleMenu();
+    }
+
+    function closeTips() {
+        document.getElementById('tipsModal').style.display = 'none';
+    }
+
+    function changeCurrency() {
+        curKey = document.getElementById('currencySelect').value;
+        counts = {};
+        render();
+    }
+
+    function render() {
+        const cont = document.getElementById('appContainer');
+        cont.innerHTML = '';
+        const data = currencies[curKey];
+        let lastT = '';
+        data.d.forEach((item, idx) => {
+            if (item.t !== lastT) {
+                const head = document.createElement('div');
+                head.className = 'section-divider';
+                head.textContent = item.t;
+                cont.appendChild(head);
+                lastT = item.t;
+            }
+            const row = document.createElement('div');
+            row.className = 'cash-row';
+            row.innerHTML = `
+                <div class="denom-label">
+                    <div class="denom-visual ${item.t.toLowerCase().includes('coin') || item.t.toLowerCase().includes('mynt') || item.t.toLowerCase().includes('moneda') ? 'visual-coin' : ''}">${item.l}</div>
+                    <span style="font-weight:700">${item.l}</span>
+                </div>
+                <div>
+                    <input type="number" class="input-box" placeholder="0" oninput="update(${idx}, this.value)" inputmode="numeric">
+                    <span class="row-total" id="row-t-${idx}">${data.s}0.00</span>
+                </div>`;
+            cont.appendChild(row);
+        });
+        updateTotal();
+    }
+
+    function update(idx, val) {
+        counts[idx] = parseFloat(val) || 0;
+        const item = currencies[curKey].d[idx];
+        document.getElementById(`row-t-${idx}`).textContent = format(counts[idx] * item.v);
+        updateTotal();
+    }
+
+    function updateTotal() {
+        let total = 0;
+        currencies[curKey].d.forEach((item, i) => total += (counts[i] || 0) * item.v);
+        document.getElementById('grandTotal').textContent = format(total);
+    }
+
+    function format(n) {
+        const s = currencies[curKey].s;
+        const d = (curKey === "JPY" || curKey === "SEK") ? 0 : 2;
+        return s + n.toLocaleString(undefined, {minimumFractionDigits: d, maximumFractionDigits: d});
+    }
+
+    function toggleFS() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            history.pushState({fs: true}, "");
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    function toggleRotation() {
+        if (screen.orientation) {
+            const type = screen.orientation.type.includes('portrait') ? 'landscape' : 'portrait';
+            screen.orientation.lock(type).catch(() => alert("Enable Auto-Rotate in system settings."));
+        }
+    }
+
+    function resetAll() { if(confirm("Reset all counts?")) { counts = {}; render(); } }
+
+    window.onload = boot;
+</script>
+</body>
+</html>
