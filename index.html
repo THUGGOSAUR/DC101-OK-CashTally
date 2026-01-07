@@ -5,164 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Cash Tally Pro</title>
     <style>
-        :root { --p: #0f172a; --a: #3b82f6; --bg: #f8fafc; --s: #10b981; }
+        :root { 
+            --p: #0f172a; --a: #3b82f6; --bg: #f8fafc; --s: #10b981; --card: #ffffff; --text: #1e293b; --border: #e2e8f0;
+        }
+        body.dark-mode {
+            --p: #1e293b; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155;
+        }
 
-        /* General Reset */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
             font-family: -apple-system, system-ui, sans-serif; 
-            background: var(--bg); 
-            margin: 0; 
-            padding-bottom: env(safe-area-inset-bottom, 120px);
-            color: #1e293b;
-            overflow-x: hidden;
-        }
-
-        /* Portrait vs Landscape optimization */
-        @media (orientation: landscape) {
-            .container { max-width: 90%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .section-divider { grid-column: span 2; }
+            background: var(--bg); margin: 0; padding-bottom: 120px;
+            color: var(--text); overflow-x: hidden; transition: background 0.3s;
         }
 
         header { 
-            background: var(--p); 
-            color: white; 
-            padding: 15px 20px; 
-            position: sticky; 
-            top: 0; 
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: var(--p); color: white; padding: 15px 20px; 
+            position: sticky; top: 0; z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center;
         }
+
+        .header-controls { display: flex; align-items: center; gap: 10px; }
 
         .currency-selector { 
-            width: 65%; 
-            padding: 10px; 
-            border-radius: 8px; 
-            background: white; 
-            font-weight: bold;
-            font-size: 0.9rem;
+            padding: 8px; border-radius: 8px; background: white; 
+            font-weight: bold; font-size: 0.9rem; color: #0f172a;
         }
 
-        .rotate-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 8px;
-            border-radius: 6px;
-            display: none; /* Only show in fullscreen */
+        .icon-btn {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 1rem;
         }
 
-        .container { max-width: 500px; margin: 0 auto; padding: 10px; transition: all 0.3s ease; }
+        /* Menu Styles */
+        .menu-dropdown {
+            position: absolute; top: 60px; right: 20px; background: var(--card);
+            border: 1px solid var(--border); border-radius: 12px; display: none;
+            flex-direction: column; width: 180px; box-shadow: 0 10px 15px rgba(0,0,0,0.2); z-index: 2005;
+        }
+        .menu-item {
+            padding: 15px; border-bottom: 1px solid var(--border); color: var(--text);
+            text-decoration: none; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 10px;
+        }
+        .menu-item:last-child { border-bottom: none; }
 
-        .section-divider { 
-            padding: 15px 5px 5px; 
-            font-size: 0.7rem; 
-            font-weight: 800; 
-            color: #64748b; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
+        /* Modal Styles */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 3000;
+        }
+        .modal-content {
+            background: var(--card); color: var(--text); padding: 25px; border-radius: 15px;
+            width: 90%; max-width: 400px;
         }
 
+        .container { max-width: 500px; margin: 0 auto; padding: 10px; }
+        .section-divider { padding: 15px 5px 5px; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
+        
         .cash-row { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 12px 15px; 
-            margin-bottom: 8px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            background: var(--card); border-radius: 12px; padding: 12px 15px; 
+            margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; 
+            border: 1px solid var(--border);
         }
-
-        .denom-label { display: flex; align-items: center; gap: 12px; }
 
         .denom-visual { 
-            width: 50px; height: 32px; 
-            background: #f1f5f9; 
-            border: 2px solid #cbd5e1; 
+            width: 50px; height: 32px; background: #f1f5f9; border: 2px solid #cbd5e1; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 0.7rem; font-weight: 800; border-radius: 6px; 
+            font-size: 0.7rem; font-weight: 800; border-radius: 6px; color: #0f172a;
         }
-
         .visual-coin { border-radius: 50%; width: 38px; height: 38px; }
 
         .input-box { 
-            width: 85px; padding: 12px; 
-            border: 2px solid #cbd5e1; 
-            border-radius: 10px; 
-            font-size: 1.2rem; 
-            text-align: center; 
-            font-weight: 800;
-            background: #fff;
+            width: 85px; padding: 12px; border: 2px solid var(--border); 
+            border-radius: 10px; font-size: 1.2rem; text-align: center; font-weight: 800;
+            background: var(--card); color: var(--text);
         }
 
-        .row-total { 
-            display: block; font-size: 0.8rem; 
-            color: #64748b; text-align: right; 
-            margin-top: 4px; font-family: monospace; 
-        }
-
-        /* Footer */
         .footer-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
-            background: #ffffff; border-top: 1px solid #e2e8f0;
-            padding: 15px 20px; display: flex;
-            justify-content: space-between; align-items: center;
-            z-index: 2000;
+            background: var(--card); border-top: 1px solid var(--border);
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 2000;
         }
 
-        .total-amount { font-size: 1.8rem; font-weight: 900; color: var(--s); }
-
-        /* Fullscreen Controls */
         .fs-btn {
-            position: fixed; bottom: 85px; right: 20px;
-            background: var(--p); color: white;
-            width: 45px; height: 45px; border-radius: 50%;
-            border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 2001; font-size: 1.2rem;
+            position: fixed; bottom: 85px; right: 20px; background: var(--p); color: white;
+            width: 45px; height: 45px; border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center; z-index: 2001;
         }
-
-        /* Handle Fullscreen Display */
-        :fullscreen body { padding-top: 20px; }
-        :-webkit-full-screen body { padding-top: 20px; }
     </style>
 </head>
 <body>
 
-<header id="appHeader">
+<header>
     <select id="currencySelect" class="currency-selector" onchange="changeCurrency()"></select>
-    <button class="rotate-btn" id="rotateBtn" onclick="toggleRotation()">🔄 Flip</button>
+    <div class="header-controls">
+        <button class="icon-btn" onclick="toggleRotation()">🔄</button>
+        <button class="icon-btn" onclick="toggleMenu()">⋮</button>
+    </div>
 </header>
 
-<div id="appContainer" class="container"></div>
+<div id="menu" class="menu-dropdown">
+    <div class="menu-item" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
+    <div class="menu-item" onclick="showTips()">💡 Pro-Tips</div>
+</div>
 
-<button class="fs-btn" onclick="toggleFS()" id="fsToggle">⛶</button>
+<div id="tipsModal" class="modal" onclick="closeTips()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0">💡 Phone Pro-Tips</h3>
+        <p>• <b>Add to Home Screen:</b> Open in Chrome, tap the 3 dots, and select "Add to Home screen".</p>
+        <p>• <b>Back Gesture:</b> Swiping back exits Fullscreen mode first.</p>
+        <p>• <b>Landscape:</b> Rotate your phone for a dual-column layout.</p>
+        <button class="icon-btn" style="background:var(--a); width:100%" onclick="closeTips()">Got it!</button>
+    </div>
+</div>
+
+<div id="appContainer" class="container"></div>
+<button class="fs-btn" onclick="toggleFS()">⛶</button>
 
 <div class="footer-bar">
     <div>
         <div style="font-size: 0.6rem; font-weight: 900; color: #64748b;">GRAND TOTAL</div>
-        <div id="grandTotal" class="total-amount">0.00</div>
+        <div id="grandTotal" style="font-size: 1.8rem; font-weight: 900; color: var(--s);">0.00</div>
     </div>
     <button style="background:#fee2e2; border:none; color:#dc2626; padding:12px 20px; border-radius:10px; font-weight:bold;" onclick="resetAll()">Reset</button>
 </div>
 
 <script>
     const currencies = {
-        "AUD": { n: "Australia", s: "$", d: [{l: "$100", v: 100, t: 'note'}, {l: "$50", v: 50, t: 'note'}, {l: "$20", v: 20, t: 'note'}, {l: "$10", v: 10, t: 'note'}, {l: "$5", v: 5, t: 'note'}, {l: "$2", v: 2, t: 'coin'}, {l: "$1", v: 1, t: 'coin'}, {l: "50c", v: 0.5, t: 'coin'}, {l: "20c", v: 0.2, t: 'coin'}, {l: "10c", v: 0.1, t: 'coin'}, {l: "5c", v: 0.05, t: 'coin'}]},
-        "USD": { n: "USA", s: "$", d: [{l: "$100", v: 100, t: 'note'}, {l: "$50", v: 50, t: 'note'}, {l: "$20", v: 20, t: 'note'}, {l: "$10", v: 10, t: 'note'}, {l: "$5", v: 5, t: 'note'}, {l: "$2", v: 2, t: 'note'}, {l: "$1", v: 1, t: 'note'}, {l: "50¢", v: 0.5, t: 'coin'}, {l: "25¢", v: 0.25, t: 'coin'}, {l: "10¢", v: 0.1, t: 'coin'}, {l: "5¢", v: 0.05, t: 'coin'}, {l: "1¢", v: 0.01, t: 'coin'}]},
-        "EUR": { n: "Europe", s: "€", d: [{l: "€500", v: 500, t: 'note'}, {l: "€200", v: 200, t: 'note'}, {l: "€100", v: 100, t: 'note'}, {l: "€50", v: 50, t: 'note'}, {l: "€20", v: 20, t: 'note'}, {l: "€10", v: 10, t: 'note'}, {l: "€5", v: 5, t: 'note'}, {l: "€2", v: 2, t: 'coin'}, {l: "€1", v: 1, t: 'coin'}, {l: "50c", v: 0.5, t: 'coin'}, {l: "20c", v: 0.2, t: 'coin'}, {l: "10c", v: 0.1, t: 'coin'}, {l: "5c", v: 0.05, t: 'coin'}, {l: "2c", v: 0.02, t: 'coin'}, {l: "1c", v: 0.01, t: 'coin'}]},
-        "GBP": { n: "UK", s: "£", d: [{l: "£50", v: 50, t: 'note'}, {l: "£20", v: 20, t: 'note'}, {l: "£10", v: 10, t: 'note'}, {l: "£5", v: 5, t: 'note'}, {l: "£2", v: 2, t: 'coin'}, {l: "£1", v: 1, t: 'coin'}, {l: "50p", v: 0.5, t: 'coin'}, {l: "20p", v: 0.2, t: 'coin'}, {l: "10p", v: 0.1, t: 'coin'}, {l: "5p", v: 0.05, t: 'coin'}, {l: "2p", v: 0.02, t: 'coin'}, {l: "1p", v: 0.01, t: 'coin'}]},
-        "MYR": { n: "Malaysia", s: "RM", d: [{l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'note'}, {l: "5", v: 5, t: 'note'}, {l: "1", v: 1, t: 'note'}, {l: "50s", v: 0.5, t: 'coin'}, {l: "20s", v: 0.2, t: 'coin'}, {l: "10s", v: 0.1, t: 'coin'}, {l: "5s", v: 0.05, t: 'coin'}]},
-        "PHP": { n: "Philippines", s: "₱", d: [{l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "20", v: 20, t: 'coin'}, {l: "10", v: 10, t: 'coin'}, {l: "5", v: 5, t: 'coin'}, {l: "1", v: 1, t: 'coin'}, {l: "25¢", v: 0.25, t: 'coin'}]},
-        "JPY": { n: "Japan", s: "¥", d: [{l: "10000", v: 10000, t: 'note'}, {l: "5000", v: 5000, t: 'note'}, {l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'coin'}, {l: "100", v: 100, t: 'coin'}, {l: "50", v: 50, t: 'coin'}, {l: "10", v: 10, t: 'coin'}, {l: "5", v: 5, t: 'coin'}, {l: "1", v: 1, t: 'coin'}]},
-        "AED": { n: "UAE", s: "DH", d: [{l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'note'}, {l: "1DH", v: 1, t: 'coin'}, {l: "50f", v: 0.5, t: 'coin'}, {l: "25f", v: 0.25, t: 'coin'}]},
-        "HKD": { n: "Hong Kong", s: "HK$", d: [{l: "1000", v: 1000, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'note'}, {l: "10", v: 10, t: 'coin'}, {l: "5", v: 5, t: 'coin'}, {l: "2", v: 2, t: 'coin'}, {l: "1", v: 1, t: 'coin'}, {l: "50¢", v: 0.5, t: 'coin'}]},
-        "SEK": { n: "Sweden", s: "kr", d: [{l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'coin'}, {l: "5", v: 5, t: 'coin'}, {l: "1", v: 1, t: 'coin'}]}
+        "AUD": { n: "Australia", s: "$", d: [{l: "$100", v: 100, t: 'note'}, {l: "$50", v: 50, t: 'note'}, {l: "$20", v: 20, t: 'note'}, {l: "$10", v: 10, t: 'note'}, {l: "$5", v: 5, t: 'note'}, {l: "$2", v: 2, t: 'coin'}, {l: "$1", v: 1, t: 'coin'}, {l: "50c", v: 0.5, t: 'coin'}]},
+        "USD": { n: "USA", s: "$", d: [{l: "$100", v: 100, t: 'note'}, {l: "$50", v: 50, t: 'note'}, {l: "$20", v: 20, t: 'note'}, {l: "$10", v: 10, t: 'note'}, {l: "$5", v: 5, t: 'note'}, {l: "$1", v: 1, t: 'note'}, {l: "25¢", v: 0.25, t: 'coin'}, {l: "10¢", v: 0.1, t: 'coin'}]},
+        "EUR": { n: "Europe", s: "€", d: [{l: "€500", v: 500, t: 'note'}, {l: "€200", v: 200, t: 'note'}, {l: "€100", v: 100, t: 'note'}, {l: "€50", v: 50, t: 'note'}, {l: "€20", v: 20, t: 'note'}, {l: "€10", v: 10, t: 'note'}, {l: "€5", v: 5, t: 'note'}, {l: "€2", v: 2, t: 'coin'}, {l: "€1", v: 1, t: 'coin'}]},
+        "GBP": { n: "UK", s: "£", d: [{l: "£50", v: 50, t: 'note'}, {l: "£20", v: 20, t: 'note'}, {l: "£10", v: 10, t: 'note'}, {l: "£5", v: 5, t: 'note'}, {l: "£2", v: 2, t: 'coin'}, {l: "£1", v: 1, t: 'coin'}, {l: "50p", v: 0.5, t: 'coin'}]},
+        "SGD": { n: "Singapore", s: "S$", d: [{l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "10", v: 10, t: 'note'}, {l: "5", v: 5, t: 'note'}, {l: "2", v: 2, t: 'note'}, {l: "1", v: 1, t: 'coin'}, {l: "50¢", v: 0.5, t: 'coin'}]},
+        "MYR": { n: "Malaysia", s: "RM", d: [{l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'note'}, {l: "5", v: 5, t: 'note'}, {l: "1", v: 1, t: 'note'}, {l: "50s", v: 0.5, t: 'coin'}]},
+        "PHP": { n: "Philippines", s: "₱", d: [{l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'coin'}, {l: "5", v: 5, t: 'coin'}]},
+        "AED": { n: "UAE", s: "DH", d: [{l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "10", v: 10, t: 'note'}, {l: "1DH", v: 1, t: 'coin'}, {l: "50f", v: 0.5, t: 'coin'}]},
+        "HKD": { n: "Hong Kong", s: "HK$", d: [{l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'coin'}, {l: "5", v: 5, t: 'coin'}]},
+        "JPY": { n: "Japan", s: "¥", d: [{l: "10000", v: 10000, t: 'note'}, {l: "5000", v: 5000, t: 'note'}, {l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'coin'}, {l: "100", v: 100, t: 'coin'}]},
+        "CNY": { n: "China", s: "¥", d: [{l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "10", v: 10, t: 'note'}, {l: "5", v: 5, t: 'note'}, {l: "1", v: 1, t: 'note'}, {l: "1元", v: 1, t: 'coin'}]},
+        "SEK": { n: "Sweden", s: "kr", d: [{l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "10", v: 10, t: 'coin'}, {l: "5", v: 5, t: 'coin'}]},
+        "RUB": { n: "Russia", s: "₽", d: [{l: "5000", v: 5000, t: 'note'}, {l: "2000", v: 2000, t: 'note'}, {l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "10", v: 10, t: 'coin'}, {l: "5", v: 5, t: 'coin'}]},
+        "CAD": { n: "Canada", s: "$", d: [{l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'note'}, {l: "5", v: 5, t: 'note'}, {l: "2", v: 2, t: 'coin'}, {l: "1", v: 1, t: 'coin'}, {l: "25¢", v: 0.25, t: 'coin'}]},
+        "MXN": { n: "Mexico", s: "$", d: [{l: "1000", v: 1000, t: 'note'}, {l: "500", v: 500, t: 'note'}, {l: "200", v: 200, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'coin'}, {l: "5", v: 5, t: 'coin'}]},
+        "INR": { n: "India", s: "₹", d: [{l: "500", v: 500, t: 'note'}, {l: "200", v: 200, t: 'note'}, {l: "100", v: 100, t: 'note'}, {l: "50", v: 50, t: 'note'}, {l: "20", v: 20, t: 'note'}, {l: "10", v: 10, t: 'note'}, {l: "20", v: 20, t: 'coin'}, {l: "10", v: 10, t: 'coin'}]}
     };
 
     let counts = {}, curKey = "AUD";
@@ -175,37 +161,25 @@
             sel.appendChild(o);
         }
         changeCurrency();
-        
-        // Handle "Back" Button gesture to exit Fullscreen
-        window.addEventListener('popstate', () => {
-            if (document.fullscreenElement) document.exitFullscreen();
-        });
     }
 
-    function toggleFS() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-            history.pushState({fs: true}, ""); // Add state for back button
-            document.getElementById('rotateBtn').style.display = 'block';
-        } else {
-            document.exitFullscreen();
-        }
+    function toggleMenu() {
+        const menu = document.getElementById('menu');
+        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
     }
 
-    // Monitor FS changes
-    document.onfullscreenchange = () => {
-        if (!document.fullscreenElement) {
-            document.getElementById('rotateBtn').style.display = 'none';
-        }
-    };
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        toggleMenu();
+    }
 
-    function toggleRotation() {
-        if (screen.orientation) {
-            const type = screen.orientation.type.includes('portrait') ? 'landscape' : 'portrait';
-            screen.orientation.lock(type).catch(() => {
-                alert("Please enable Auto-Rotate in your phone settings.");
-            });
-        }
+    function showTips() {
+        document.getElementById('tipsModal').style.display = 'flex';
+        toggleMenu();
+    }
+
+    function closeTips() {
+        document.getElementById('tipsModal').style.display = 'none';
     }
 
     function changeCurrency() {
@@ -219,7 +193,6 @@
         cont.innerHTML = '';
         const data = currencies[curKey];
         let lastT = '';
-
         data.d.forEach((item, idx) => {
             if (item.t !== lastT) {
                 const head = document.createElement('div');
@@ -263,15 +236,21 @@
         return s + n.toLocaleString(undefined, {minimumFractionDigits: d, maximumFractionDigits: d});
     }
 
+    function toggleFS() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    }
+
+    function toggleRotation() {
+        if (screen.orientation) {
+            const type = screen.orientation.type.includes('portrait') ? 'landscape' : 'portrait';
+            screen.orientation.lock(type).catch(() => alert("Enable Auto-Rotate in system settings."));
+        }
+    }
+
     function resetAll() { if(confirm("Reset all?")) { counts = {}; render(); } }
 
     window.onload = boot;
 </script>
 </body>
 </html>
-Pro-Tips for your OnePlus Nord 3:
-Add to Home Screen: Open this file in Chrome on your phone, tap the 3 dots (menu) at the top right, and select "Add to Home screen." It will now appear like a real app on your app drawer!
-
-Back Gesture: If you use the swipe-from-side gesture to go back, the app is coded to exit Fullscreen first. Swipe again to actually close the app.
-
-Landscape: The app will automatically split into two columns when you turn your phone sideways to make the most of that wide OnePlus screen.
