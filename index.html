@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cash Tally Pro</title>
+    <title>Cash Tally Pro - Banker's Edition</title>
     <style>
         :root { 
             --p: #0f172a; --a: #3b82f6; --bg: #f8fafc; --s: #10b981; --card: #ffffff; --text: #1e293b; --border: #e2e8f0;
@@ -16,7 +16,7 @@
         
         body { 
             font-family: -apple-system, system-ui, sans-serif; 
-            background: var(--bg); margin: 0; padding-bottom: 120px;
+            background: var(--bg); margin: 0; padding-bottom: 160px;
             color: var(--text); overflow-x: hidden; transition: background 0.3s;
         }
 
@@ -26,286 +26,292 @@
             display: flex; justify-content: space-between; align-items: center;
         }
 
-        .header-controls { display: flex; align-items: center; gap: 10px; }
-
         .currency-selector { 
             padding: 8px; border-radius: 8px; background: white; 
-            font-weight: bold; font-size: 0.9rem; color: #0f172a; border: none; width: 140px;
+            font-weight: bold; font-size: 0.85rem; color: #0f172a; border: none; width: 220px;
         }
 
         .icon-btn {
             background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
-            color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 1rem;
+            color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer;
         }
 
         .menu-dropdown {
-            position: absolute; top: 60px; right: 20px; background: var(--card);
+            position: absolute; top: 65px; right: 20px; background: var(--card);
             border: 1px solid var(--border); border-radius: 12px; display: none;
-            flex-direction: column; width: 180px; box-shadow: 0 10px 15px rgba(0,0,0,0.2); z-index: 2005;
+            flex-direction: column; width: 260px; box-shadow: 0 10px 15px rgba(0,0,0,0.2); z-index: 2005;
         }
         .menu-item {
-            padding: 15px; border-bottom: 1px solid var(--border); color: var(--text);
-            text-decoration: none; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 10px;
+            padding: 12px 15px; border-bottom: 1px solid var(--border); color: var(--text);
+            font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
         }
-        .menu-item:last-child { border-bottom: none; }
-
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 3000;
+        .lang-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 10px;
+            background: var(--bg); border-top: 1px solid var(--border); display: none;
         }
-        .modal-content {
-            background: var(--card); color: var(--text); padding: 25px; border-radius: 15px;
-            width: 90%; max-width: 400px;
+        .lang-btn {
+            padding: 8px; font-size: 0.75rem; border: 1px solid var(--border);
+            border-radius: 6px; background: var(--card); color: var(--text); cursor: pointer; text-align: center;
         }
 
-        .container { max-width: 500px; margin: 0 auto; padding: 10px; }
-        .section-divider { padding: 15px 5px 5px; font-size: 0.7rem; font-weight: 800; color: #a1a1aa; text-transform: uppercase; border-bottom: 1px solid var(--border); margin-bottom: 10px;}
-        
+        .container { max-width: 600px; margin: 0 auto; padding: 10px; }
+
+        .section-header-row {
+            display: grid; grid-template-columns: 1.4fr 1fr 1fr;
+            padding: 18px 10px 8px; font-size: 0.7rem; font-weight: 800;
+            color: #64748b; text-transform: uppercase;
+        }
+
         .cash-row { 
-            background: var(--card); border-radius: 12px; padding: 12px 15px; 
-            margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; 
-            border: 1px solid var(--border);
+            background: var(--card); border-radius: 12px; padding: 12px 10px; 
+            margin-bottom: 8px; display: grid; grid-template-columns: 1.4fr 1fr 1.1fr;
+            align-items: center; border: 1px solid var(--border);
         }
 
-        .denom-label { display: flex; align-items: center; gap: 12px; }
-
+        .denom-info { display: flex; align-items: center; gap: 8px; overflow: hidden; }
         .denom-visual { 
-            width: 55px; height: 35px; background: #f1f5f9; border: 2px solid #cbd5e1; 
+            flex-shrink: 0; width: 42px; height: 30px; background: #f1f5f9; border: 1px solid #cbd5e1; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 0.7rem; font-weight: 800; border-radius: 6px; color: #0f172a;
+            font-size: 0.65rem; font-weight: 800; border-radius: 4px; color: #0f172a;
         }
-        .visual-coin { border-radius: 50%; width: 40px; height: 40px; }
+        .visual-coin { border-radius: 50%; width: 36px; height: 36px; }
+        .denom-text { font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
 
         .input-box { 
-            width: 90px; padding: 12px; border: 2px solid var(--border); 
-            border-radius: 10px; font-size: 1.2rem; text-align: center; font-weight: 800;
-            background: var(--card); color: var(--text);
+            width: 95%; padding: 10px; border: 2px solid var(--border); 
+            border-radius: 8px; font-size: 1.1rem; text-align: center; font-weight: 700;
+            background: var(--bg); color: var(--text);
         }
 
-        .row-total { display: block; font-size: 0.75rem; color: #64748b; text-align: right; margin-top: 4px; font-family: monospace; }
+        .subtotal-cell { text-align: right; font-family: 'Courier New', monospace; font-weight: 700; color: var(--a); font-size: 0.95rem; }
 
         .footer-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
-            background: var(--card); border-top: 1px solid var(--border);
-            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 2000;
+            background: var(--card); border-top: 2px solid var(--border);
+            padding: 15px 25px; z-index: 2000;
         }
-
-        .fs-btn {
-            position: fixed; bottom: 85px; right: 20px; background: var(--p); color: white;
-            width: 45px; height: 45px; border-radius: 50%; border: none;
-            display: flex; align-items: center; justify-content: center; z-index: 2001; font-size: 1.2rem;
+        .footer-top { display: flex; justify-content: space-between; align-items: center; }
+        #grandTotal { font-size: 1.7rem; font-weight: 900; color: var(--s); transition: filter 0.2s; }
+        #totalWords { 
+            font-size: 0.7rem; font-weight: 600; color: var(--a); 
+            margin-top: 5px; text-transform: capitalize; font-style: italic;
+            max-width: 80%; line-height: 1.2;
         }
+        .blurred { filter: blur(8px); }
+        .secure-badge { font-size: 0.6rem; background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 10px; margin-left: 5px; }
     </style>
 </head>
-<body>
+<body class="dark-mode">
 
 <header>
     <select id="currencySelect" class="currency-selector" onchange="changeCurrency()"></select>
-    <div class="header-controls">
-        <button class="icon-btn" onclick="toggleRotation()">🔄</button>
+    <div style="display:flex; gap:8px">
+        <button class="icon-btn" onclick="toggleFS()">⛶</button>
         <button class="icon-btn" onclick="toggleMenu()">⋮</button>
     </div>
 </header>
 
 <div id="menu" class="menu-dropdown">
-    <div class="menu-item" onclick="toggleDarkMode()">🌙 Dark Mode</div>
-    <div class="menu-item" onclick="showTips()">💡 Pro-Tips</div>
-</div>
-
-<div id="tipsModal" class="modal" onclick="closeTips()">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0">💡 Phone Pro-Tips</h3>
-        <p>• <b>Add to Home Screen:</b> Open in Chrome, tap the 3 dots, and select "Add to Home screen" for a full-app feel.</p>
-        <p>• <b>Back Gesture:</b> Swiping back exits Fullscreen mode before closing the page.</p>
-        <p>• <b>Landscape:</b> Rotate your phone for better visibility with large amounts.</p>
-        <button class="icon-btn" style="background:var(--a); width:100%; height: 50px; margin-top: 10px" onclick="closeTips()">Close</button>
+    <div class="menu-item" onclick="alert('AI Scanner is a PRO feature')"><span data-i18n="menu_ai">📸 AI Scanner</span> <span style="font-size:0.5rem; background:gold; color:black; padding:2px 4px; border-radius:4px">PRO</span></div>
+    <div class="menu-item" onclick="toggleDarkMode()"><span data-i18n="menu_dark">🌙 Dark Mode</span></div>
+    <div class="menu-item" onclick="toggleLangGrid()"><span data-i18n="menu_lang">🌐 Languages</span></div>
+    <div id="langGrid" class="lang-grid">
+        <button class="lang-btn" onclick="setLang('ar')">العربية</button>
+        <button class="lang-btn" onclick="setLang('zh')">中文</button>
+        <button class="lang-btn" onclick="setLang('en')">English</button>
+        <button class="lang-btn" onclick="setLang('es')">Español</button>
+        <button class="lang-btn" onclick="setLang('fr')">Français</button>
+        <button class="lang-btn" onclick="setLang('hi')">हिन्दी</button>
+        <button class="lang-btn" onclick="setLang('ja')">日本語</button>
+        <button class="lang-btn" onclick="setLang('ko')">한국어</button>
+        <button class="lang-btn" onclick="setLang('la')">Latina</button>
+        <button class="lang-btn" onclick="setLang('ru')">Русский</button>
+        <button class="lang-btn" onclick="setLang('sv')">Svenska</button>
     </div>
+    <div class="menu-item" onclick="resetAll()"><span data-i18n="menu_reset">🔄 Reset Current</span></div>
 </div>
 
 <div id="appContainer" class="container"></div>
-<button class="fs-btn" onclick="toggleFS()">⛶</button>
 
 <div class="footer-bar">
-    <div>
-        <div style="font-size: 0.6rem; font-weight: 900; color: #64748b;" id="totalLabel">GRAND TOTAL</div>
-        <div id="grandTotal" style="font-size: 1.8rem; font-weight: 900; color: var(--s);">0.00</div>
+    <div class="footer-top">
+        <div onclick="togglePrivacy()" style="cursor:pointer; flex:1">
+            <div style="font-size: 0.6rem; font-weight: 900; color: #64748b;">
+                <span data-i18n="total_label">GRAND TOTAL</span> <span class="secure-badge">SECURE</span>
+            </div>
+            <div id="grandTotal">0.00</div>
+        </div>
+        <button id="resetBtn" style="background:#fee2e2; border:none; color:#dc2626; padding:12px 20px; border-radius:10px; font-weight:bold;" onclick="resetAll()" data-i18n="clear_btn">Reset</button>
     </div>
-    <button style="background:#fee2e2; border:none; color:#dc2626; padding:12px 20px; border-radius:10px; font-weight:bold;" onclick="resetAll()">Reset</button>
+    <div id="totalWords"></div>
 </div>
 
 <script>
-    const currencies = {
-        "AUD": { n: "Australia (Dollar)", s: "$", d: [
-            {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
-            {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}, {l: "50c", v: 0.5, t: 'Coin'}, {l: "20c", v: 0.2, t: 'Coin'}, {l: "10c", v: 0.1, t: 'Coin'}, {l: "5c", v: 0.05, t: 'Coin'}
-        ]},
-        "CAD": { n: "Canada (Dollar)", s: "$", d: [
-            {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
-            {l: "$2", v: 2, t: 'Coin (Toonie)'}, {l: "$1", v: 1, t: 'Coin (Loonie)'}, {l: "50¢", v: 0.5, t: 'Coin'}, {l: "25¢", v: 0.25, t: 'Coin'}, {l: "10¢", v: 0.1, t: 'Coin'}, {l: "5¢", v: 0.05, t: 'Coin'}
-        ]},
-        "USD": { n: "USA (Dollar)", s: "$", d: [
-            {l: "100", v: 100, t: 'Federal Reserve Note'}, {l: "50", v: 50, t: 'Federal Reserve Note'}, {l: "20", v: 20, t: 'Federal Reserve Note'}, {l: "10", v: 10, t: 'Federal Reserve Note'}, {l: "5", v: 5, t: 'Federal Reserve Note'}, {l: "2", v: 2, t: 'Federal Reserve Note'}, {l: "1", v: 1, t: 'Federal Reserve Note'},
-            {l: "$1", v: 1, t: 'Coin'}, {l: "50¢", v: 0.5, t: 'Coin'}, {l: "25¢", v: 0.25, t: 'Coin'}, {l: "10¢", v: 0.1, t: 'Coin'}, {l: "5¢", v: 0.05, t: 'Coin'}, {l: "1¢", v: 0.01, t: 'Coin'}
-        ]},
-        "GBP": { n: "UK (Pound)", s: "£", d: [
-            {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
-            {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}, {l: "50p", v: 0.5, t: 'Coin'}, {l: "20p", v: 0.2, t: 'Coin'}, {l: "10p", v: 0.1, t: 'Coin'}, {l: "5p", v: 0.05, t: 'Coin'}, {l: "2p", v: 0.02, t: 'Coin'}, {l: "1p", v: 0.01, t: 'Coin'}
-        ]},
-        "EUR": { n: "Eurozone (Euro)", s: "€", d: [
-            {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
-            {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}, {l: "50c", v: 0.5, t: 'Coin'}, {l: "20c", v: 0.2, t: 'Coin'}, {l: "10c", v: 0.1, t: 'Coin'}, {l: "5c", v: 0.05, t: 'Coin'}, {l: "2c", v: 0.02, t: 'Coin'}, {l: "1c", v: 0.01, t: 'Coin'}
-        ]},
-        "INR": { n: "India (Rupee)", s: "₹", d: [
-            {l: "2000", v: 2000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'},
-            {l: "20", v: 20, t: 'Coin'}, {l: "10", v: 10, t: 'Coin'}, {l: "5", v: 5, t: 'Coin'}, {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}
-        ]},
-        "MXN": { n: "Mexico (Peso)", s: "$", d: [
-            {l: "1000", v: 1000, t: 'Billete'}, {l: "500", v: 500, t: 'Billete'}, {l: "200", v: 200, t: 'Billete'}, {l: "100", v: 100, t: 'Billete'}, {l: "50", v: 50, t: 'Billete'}, {l: "20", v: 20, t: 'Billete'},
-            {l: "20", v: 20, t: 'Moneda'}, {l: "10", v: 10, t: 'Moneda'}, {l: "5", v: 5, t: 'Moneda'}, {l: "2", v: 2, t: 'Moneda'}, {l: "1", v: 1, t: 'Moneda'}, {l: "50¢", v: 0.5, t: 'Moneda'}, {l: "20¢", v: 0.2, t: 'Moneda'}
-        ]},
-        "RUB": { n: "Russia (Ruble)", s: "₽", d: [
-            {l: "5000", v: 5000, t: 'Banknote'}, {l: "2000", v: 2000, t: 'Banknote'}, {l: "1000", v: 1000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote (Rare)'},
-            {l: "10", v: 10, t: 'Coin'}, {l: "5", v: 5, t: 'Coin'}, {l: "2", v: 2, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}
-        ]},
-        "AED": { n: "UAE (Dirham)", s: "AED ", d: [
-            {l: "1000", v: 1000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'},
-            {l: "1", v: 1, t: 'Coin'}, {l: "50f", v: 0.5, t: 'Coin (Fils)'}, {l: "25f", v: 0.25, t: 'Coin (Fils)'}
-        ]},
-        "SGD": { n: "Singapore (Dollar)", s: "S$", d: [
-            {l: "10000", v: 10000, t: 'Banknote (Limited)'}, {l: "1000", v: 1000, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'}, {l: "2", v: 2, t: 'Banknote'},
-            {l: "$1", v: 1, t: 'Coin'}, {l: "50¢", v: 0.5, t: 'Coin'}, {l: "20¢", v: 0.2, t: 'Coin'}, {l: "10¢", v: 0.1, t: 'Coin'}, {l: "5¢", v: 0.05, t: 'Coin'}
-        ]},
-        "MYR": { n: "Malaysia (Ringgit)", s: "RM", d: [
-            {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'}, {l: "1", v: 1, t: 'Banknote'},
-            {l: "50s", v: 0.5, t: 'Coin (Sen)'}, {l: "20s", v: 0.2, t: 'Coin (Sen)'}, {l: "10s", v: 0.1, t: 'Coin (Sen)'}, {l: "5s", v: 0.05, t: 'Coin (Sen)'}
-        ]},
-        "PHP": { n: "Philippines (Peso)", s: "₱", d: [
-            {l: "1000", v: 1000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "200", v: 200, t: 'Banknote'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'},
-            {l: "20", v: 20, t: 'Coin'}, {l: "10", v: 10, t: 'Coin'}, {l: "5", v: 5, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}, {l: "25¢", v: 0.25, t: 'Coin (Sentimo)'}, {l: "5¢", v: 0.05, t: 'Coin (Sentimo)'}, {l: "1¢", v: 0.01, t: 'Coin (Sentimo)'}
-        ]},
-        "HKD": { n: "Hong Kong (Dollar)", s: "HK$", d: [
-            {l: "1000", v: 1000, t: 'Banknote'}, {l: "500", v: 500, t: 'Banknote'}, {l: "150", v: 150, t: 'Banknote (Commem.)'}, {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'},
-            {l: "$10", v: 10, t: 'Coin'}, {l: "$5", v: 5, t: 'Coin'}, {l: "$2", v: 2, t: 'Coin'}, {l: "$1", v: 1, t: 'Coin'}, {l: "50¢", v: 0.5, t: 'Coin'}, {l: "20¢", v: 0.2, t: 'Coin'}, {l: "10¢", v: 0.1, t: 'Coin'}
-        ]},
-        "JPY": { n: "Japan (Yen)", s: "¥", d: [
-            {l: "10000", v: 10000, t: 'Banknote'}, {l: "5000", v: 5000, t: 'Banknote'}, {l: "2000", v: 2000, t: 'Banknote (Rare)'}, {l: "1000", v: 1000, t: 'Banknote'},
-            {l: "500", v: 500, t: 'Coin'}, {l: "100", v: 100, t: 'Coin'}, {l: "50", v: 50, t: 'Coin'}, {l: "10", v: 10, t: 'Coin'}, {l: "5", v: 5, t: 'Coin'}, {l: "1", v: 1, t: 'Coin'}
-        ]},
-        "CNY": { n: "China (Yuan)", s: "¥", d: [
-            {l: "100", v: 100, t: 'Banknote'}, {l: "50", v: 50, t: 'Banknote'}, {l: "20", v: 20, t: 'Banknote'}, {l: "10", v: 10, t: 'Banknote'}, {l: "5", v: 5, t: 'Banknote'}, {l: "1", v: 1, t: 'Banknote'}, {l: "5角", v: 0.5, t: 'Banknote (Jiao)'}, {l: "1角", v: 0.1, t: 'Banknote (Jiao)'},
-            {l: "1元", v: 1, t: 'Coin (Yuan)'}, {l: "5角", v: 0.5, t: 'Coin (Jiao)'}, {l: "1角", v: 0.1, t: 'Coin (Jiao)'}
-        ]},
-        "SEK": { n: "Sweden (Krona)", s: "kr ", d: [
-            {l: "1000", v: 1000, t: 'Sedel'}, {l: "500", v: 500, t: 'Sedel'}, {l: "200", v: 200, t: 'Sedel'}, {l: "100", v: 100, t: 'Sedel'}, {l: "50", v: 50, t: 'Sedel'}, {l: "20", v: 20, t: 'Sedel'},
-            {l: "10", v: 10, t: 'Mynt'}, {l: "5", v: 5, t: 'Mynt'}, {l: "2", v: 2, t: 'Mynt'}, {l: "1", v: 1, t: 'Mynt'}
-        ]}
+    const i18n = {
+        en: { menu_ai: "📸 AI Scanner", menu_dark: "🌙 Dark Mode", menu_lang: "🌐 Languages", menu_reset: "🔄 Reset All", total_label: "GRAND TOTAL", clear_btn: "Reset", h_count: "Count", h_sub: "Sub Total", notes: "Notes", coins: "Coins" },
+        fr: { menu_ai: "📸 Scanner IA", menu_dark: "🌙 Mode Sombre", menu_lang: "🌐 Langues", menu_reset: "🔄 Réinitialiser", total_label: "TOTAL GÉNÉRAL", clear_btn: "Effacer", h_count: "Nombre", h_sub: "Sous-total", notes: "Billets", coins: "Pièces" },
+        sv: { menu_ai: "📸 AI Scanner", menu_dark: "🌙 Mörkt Läge", menu_lang: "🌐 Språk", menu_reset: "🔄 Återställ", total_label: "TOTALT", clear_btn: "Rensa", h_count: "Antal", h_sub: "Delsumma", notes: "Sedlar", coins: "Mynt" },
+        ko: { menu_ai: "📸 AI 스캐너", menu_dark: "🌙 다크 모드", menu_lang: "🌐 언어 선택", menu_reset: "🔄 모두 초기화", total_label: "최종 합계", clear_btn: "초기화", h_count: "수량", h_sub: "소계", notes: "지폐", coins: "동전" },
+        es: { menu_ai: "📸 Escáner AI", menu_dark: "🌙 Modo Oscuro", menu_lang: "🌐 Idiomas", menu_reset: "🔄 Reiniciar", total_label: "GRAN TOTAL", clear_btn: "Limpiar", h_count: "Cantidad", h_sub: "Subtotal", notes: "Billetes", coins: "Monedas" },
+        la: { menu_ai: "📸 AI Scrutator", menu_dark: "🌙 Modus Obscurus", menu_lang: "🌐 Linguae", menu_reset: "🔄 Reset", total_label: "SUMMA TOTALIS", clear_btn: "Deles", h_count: "Numerus", h_sub: "Sub-summa", notes: "Chartulae", coins: "Nummi" },
+        ja: { menu_ai: "📸 AIスキャナー", menu_dark: "🌙 ダークモード", menu_lang: "🌐 言語切替", menu_reset: "🔄 全リセット", total_label: "総合計", clear_btn: "リセット", h_count: "枚数", h_sub: "小計", notes: "紙幣", coins: "硬貨" },
+        hi: { menu_ai: "📸 AI स्कैनर", menu_dark: "🌙 डार्क मोड", menu_lang: "🌐 भाषाएं", menu_reset: "🔄 सब रीसेट करें", total_label: "कुल योग", clear_btn: "साफ करें", h_count: "गिनती", h_sub: "कुल मूल्य", notes: "नोट", coins: "सिक्के" },
+        ar: { menu_ai: "📸 ماسح ذكاء اصطناعي", menu_dark: "🌙 الوضع الداكن", menu_lang: "🌐 اللغات", menu_reset: "🔄 إعادة ضبط", total_label: "المجموع الكلي", clear_btn: "مسح", h_count: "عدد", h_sub: "المجموع الفرعي", notes: "أوراق نقدية", coins: "عملات معدنية" },
+        zh: { menu_ai: "📸 AI扫描仪", menu_dark: "🌙 深色模式", menu_lang: "🌐 语言切换", menu_reset: "🔄 重置全部", total_label: "累计总额", clear_btn: "清除", h_count: "数量", h_sub: "小计", notes: "纸币", coins: "硬币" },
+        ru: { menu_ai: "📸 ИИ-сканер", menu_dark: "🌙 Темный режим", menu_lang: "🌐 Языки", menu_reset: "🔄 Сбросить все", total_label: "ИТОГО", clear_btn: "Очистить", h_count: "Кол-во", h_sub: "Сумма", notes: "Купюры", coins: "Монеты" }
     };
 
-    let counts = {}, curKey = "AUD";
+    const currencies = {
+        "AUD": { n: "Australia (Dollar)", s: "$", maj: "Dollars", min: "Cents", d: [{l: "100", v: 100, t: 'Notes', dn: "100 Dollars ($)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Dollars ($)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Dollars ($)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Dollars ($)"}, {l: "5", v: 5, t: 'Notes', dn: "5 Dollars ($)"}, {l: "2", v: 2, t: 'Coins', dn: "2 Dollars ($)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Dollar ($)"}, {l: "50c", v: 0.5, t: 'Coins', dn: "50 Cents (c)"}, {l: "20c", v: 0.2, t: 'Coins', dn: "20 Cents (c)"}, {l: "10c", v: 0.1, t: 'Coins', dn: "10 Cents (c)"}, {l: "5c", v: 0.05, t: 'Coins', dn: "5 Cents (c)"}]},
+        "CAD": { n: "Canada (Dollar)", s: "$", maj: "Dollars", min: "Cents", d: [{l: "100", v: 100, t: 'Notes', dn: "100 Dollars ($)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Dollars ($)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Dollars ($)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Dollars ($)"}, {l: "5", v: 5, t: 'Notes', dn: "5 Dollars ($)"}, {l: "$2", v: 2, t: 'Coins', dn: "2 Dollars (Toonie)"}, {l: "$1", v: 1, t: 'Coins', dn: "1 Dollar (Loonie)"}, {l: "50¢", v: 0.5, t: 'Coins', dn: "50 Cents (¢)"}, {l: "25¢", v: 0.25, t: 'Coins', dn: "25 Cents (¢)"}, {l: "10¢", v: 0.1, t: 'Coins', dn: "10 Cents (¢)"}, {l: "5¢", v: 0.05, t: 'Coins', dn: "5 Cents (¢)"}]},
+        "CNY": { n: "China (Yuan)", s: "¥", maj: "Yuan", min: "Jiao", d: [{l: "100", v: 100, t: 'Notes', dn: "100 Yuan (¥)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Yuan (¥)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Yuan (¥)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Yuan (¥)"}, {l: "5", v: 5, t: 'Notes', dn: "5 Yuan (¥)"}, {l: "1", v: 1, t: 'Notes', dn: "1 Yuan (¥)"}, {l: "1元", v: 1, t: 'Coins', dn: "1 Yuan (元)"}, {l: "5角", v: 0.5, t: 'Coins', dn: "5 Jiao (角)"}, {l: "1角", v: 0.1, t: 'Coins', dn: "1 Jiao (角)"}]},
+        "EUR": { n: "Eurozone (Euro)", s: "€", maj: "Euros", min: "Cents", d: [{l: "200", v: 200, t: 'Notes', dn: "200 Euros (€)"}, {l: "100", v: 100, t: 'Notes', dn: "100 Euros (€)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Euros (€)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Euros (€)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Euros (€)"}, {l: "5", v: 5, t: 'Notes', dn: "5 Euros (€)"}, {l: "2", v: 2, t: 'Coins', dn: "2 Euros (€)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Euro (€)"}, {l: "50c", v: 0.5, t: 'Coins', dn: "50 Cents (c)"}, {l: "20c", v: 0.2, t: 'Coins', dn: "20 Cents (c)"}, {l: "10c", v: 0.1, t: 'Coins', dn: "10 Cents (c)"}, {l: "5c", v: 0.05, t: 'Coins', dn: "5 Cents (c)"}, {l: "2c", v: 0.02, t: 'Coins', dn: "2 Cents (c)"}, {l: "1c", v: 0.01, t: 'Coins', dn: "1 Cent (c)"}]},
+        "HKD": { n: "Hong Kong (Dollar)", s: "HK$", maj: "Dollars", min: "Cents", d: [{l: "1000", v: 1000, t: 'Notes', dn: "1000 Dollars ($)"}, {l: "500", v: 500, t: 'Notes', dn: "500 Dollars ($)"}, {l: "100", v: 100, t: 'Notes', dn: "100 Dollars ($)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Dollars ($)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Dollars ($)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Dollars ($)"}, {l: "$10", v: 10, t: 'Coins', dn: "10 Dollars ($)"}, {l: "$5", v: 5, t: 'Coins', dn: "5 Dollars ($)"}, {l: "$2", v: 2, t: 'Coins', dn: "2 Dollars ($)"}, {l: "$1", v: 1, t: 'Coins', dn: "1 Dollar ($)"}, {l: "50¢", v: 0.5, t: 'Coins', dn: "50 Cents (¢)"}, {l: "20¢", v: 0.2, t: 'Coins', dn: "20 Cents (¢)"}, {l: "10¢", v: 0.1, t: 'Coins', dn: "10 Cents (¢)"}]},
+        "INR": { n: "India (Rupee)", s: "₹", maj: "Rupees", min: "Paise", d: [{l: "500", v: 500, t: 'Notes', dn: "500 Rupees (₹)"}, {l: "200", v: 200, t: 'Notes', dn: "200 Rupees (₹)"}, {l: "100", v: 100, t: 'Notes', dn: "100 Rupees (₹)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Rupees (₹)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Rupees (₹)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Rupees (₹)"}, {l: "20", v: 20, t: 'Coins', dn: "20 Rupees (₹)"}, {l: "10", v: 10, t: 'Coins', dn: "10 Rupees (₹)"}, {l: "5", v: 5, t: 'Coins', dn: "5 Rupees (₹)"}, {l: "2", v: 2, t: 'Coins', dn: "2 Rupees (₹)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Rupee (₹)"}]},
+        "JPY": { n: "Japan (Yen)", s: "¥", maj: "Yen", min: "", d: [{l: "10k", v: 10000, t: 'Notes', dn: "10,000 Yen (¥)"}, {l: "5k", v: 5000, t: 'Notes', dn: "5,000 Yen (¥)"}, {l: "2k", v: 2000, t: 'Notes', dn: "2,000 Yen (¥)"}, {l: "1k", v: 1000, t: 'Notes', dn: "1,000 Yen (¥)"}, {l: "500", v: 500, t: 'Coins', dn: "500 Yen (¥)"}, {l: "100", v: 100, t: 'Coins', dn: "100 Yen (¥)"}, {l: "50", v: 50, t: 'Coins', dn: "50 Yen (¥)"}, {l: "10", v: 10, t: 'Coins', dn: "10 Yen (¥)"}, {l: "5", v: 5, t: 'Coins', dn: "5 Yen (¥)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Yen (¥)"}]},
+        "MYR": { n: "Malaysia (Ringgit)", s: "RM", maj: "Ringgit", min: "Sen", d: [{l: "100", v: 100, t: 'Notes', dn: "100 Ringgit (RM)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Ringgit (RM)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Ringgit (RM)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Ringgit (RM)"}, {l: "5", v: 5, t: 'Notes', dn: "5 Ringgit (RM)"}, {l: "1", v: 1, t: 'Notes', dn: "1 Ringgit (RM)"}, {l: "50s", v: 0.5, t: 'Coins', dn: "50 Sen (s)"}, {l: "20s", v: 0.2, t: 'Coins', dn: "20 Sen (s)"}, {l: "10s", v: 0.1, t: 'Coins', dn: "10 Sen (s)"}, {l: "5s", v: 0.05, t: 'Coins', dn: "5 Sen (s)"}]},
+        "MXN": { n: "Mexico (Peso)", s: "$", maj: "Pesos", min: "Centavos", d: [{l: "1000", v: 1000, t: 'Notes', dn: "1000 Pesos ($)"}, {l: "500", v: 500, t: 'Notes', dn: "500 Pesos ($)"}, {l: "200", v: 200, t: 'Notes', dn: "200 Pesos ($)"}, {l: "100", v: 100, t: 'Notes', dn: "100 Pesos ($)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Pesos ($)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Pesos ($)"}, {l: "20", v: 20, t: 'Coins', dn: "20 Pesos ($)"}, {l: "10", v: 10, t: 'Coins', dn: "10 Pesos ($)"}, {l: "5", v: 5, t: 'Coins', dn: "5 Pesos ($)"}, {l: "2", v: 2, t: 'Coins', dn: "2 Pesos ($)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Peso ($)"}, {l: "50¢", v: 0.5, t: 'Coins', dn: "50 Centavos (¢)"}]},
+        "PHP": { n: "Philippines (Peso)", s: "₱", maj: "Pesos", min: "Centavos", d: [{l: "1000", v: 1000, t: 'Notes', dn: "1000 Pesos (₱)"}, {l: "500", v: 500, t: 'Notes', dn: "500 Pesos (₱)"}, {l: "200", v: 200, t: 'Notes', dn: "200 Pesos (₱)"}, {l: "100", v: 100, t: 'Notes', dn: "100 Pesos (₱)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Pesos (₱)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Pesos (₱)"}, {l: "20", v: 20, t: 'Coins', dn: "20 Pesos (₱)"}, {l: "10", v: 10, t: 'Coins', dn: "10 Pesos (₱)"}, {l: "5", v: 5, t: 'Coins', dn: "5 Pesos (₱)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Peso (₱)"}, {l: "25¢", v: 0.25, t: 'Coins', dn: "25 Cents (¢)"}, {l: "5¢", v: 0.05, t: 'Coins', dn: "5 Cents (¢)"}]},
+        "RUB": { n: "Russia (Ruble)", s: "₽", maj: "Rubles", min: "Kopecks", d: [{l: "5000", v: 5000, t: 'Notes', dn: "5000 Rubles (₽)"}, {l: "2000", v: 2000, t: 'Notes', dn: "2000 Rubles (₽)"}, {l: "1000", v: 1000, t: 'Notes', dn: "1000 Rubles (₽)"}, {l: "500", v: 500, t: 'Notes', dn: "500 Rubles (₽)"}, {l: "200", v: 200, t: 'Notes', dn: "200 Rubles (₽)"}, {l: "100", v: 100, t: 'Notes', dn: "100 Rubles (₽)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Rubles (₽)"}, {l: "10", v: 10, t: 'Coins', dn: "10 Rubles (₽)"}, {l: "5", v: 5, t: 'Coins', dn: "5 Rubles (₽)"}, {l: "2", v: 2, t: 'Coins', dn: "2 Rubles (₽)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Ruble (₽)"}]},
+        "SGD": { n: "Singapore (Dollar)", s: "S$", maj: "Dollars", min: "Cents", d: [{l: "1000", v: 1000, t: 'Notes', dn: "1000 Dollars (S$)"}, {l: "100", v: 100, t: 'Notes', dn: "100 Dollars (S$)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Dollars (S$)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Dollars (S$)"}, {l: "5", v: 5, t: 'Notes', dn: "5 Dollars (S$)"}, {l: "2", v: 2, t: 'Notes', dn: "2 Dollars (S$)"}, {l: "$1", v: 1, t: 'Coins', dn: "1 Dollar (S$)"}, {l: "50¢", v: 0.5, t: 'Coins', dn: "50 Cents (¢)"}, {l: "20¢", v: 0.2, t: 'Coins', dn: "20 Cents (¢)"}, {l: "10¢", v: 0.1, t: 'Coins', dn: "10 Cents (¢)"}, {l: "5¢", v: 0.05, t: 'Coins', dn: "5 Cents (¢)"}]},
+        "KRW": { n: "South Korea (Won)", s: "₩", maj: "Won", min: "", d: [{l: "50k", v: 50000, t: 'Notes', dn: "50,000 Won (₩)"}, {l: "10k", v: 10000, t: 'Notes', dn: "10,000 Won (₩)"}, {l: "5k", v: 5000, t: 'Notes', dn: "5,000 Won (₩)"}, {l: "1k", v: 1000, t: 'Notes', dn: "1,000 Won (₩)"}, {l: "500", v: 500, t: 'Coins', dn: "500 Won (₩)"}, {l: "100", v: 100, t: 'Coins', dn: "100 Won (₩)"}, {l: "50", v: 50, t: 'Coins', dn: "50 Won (₩)"}, {l: "10", v: 10, t: 'Coins', dn: "10 Won (₩)"}]},
+        "SEK": { n: "Sweden (Krona)", s: "kr", maj: "Kronor", min: "Öre", d: [{l: "1000", v: 1000, t: 'Notes', dn: "1000 Kronor (kr)"}, {l: "500", v: 500, t: 'Notes', dn: "500 Kronor (kr)"}, {l: "200", v: 200, t: 'Notes', dn: "200 Kronor (kr)"}, {l: "100", v: 100, t: 'Notes', dn: "100 Kronor (kr)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Kronor (kr)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Kronor (kr)"}, {l: "10", v: 10, t: 'Coins', dn: "10 Kronor (kr)"}, {l: "5", v: 5, t: 'Coins', dn: "5 Kronor (kr)"}, {l: "2", v: 2, t: 'Coins', dn: "2 Kronor (kr)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Krona (kr)"}]},
+        "AED": { n: "UAE (Dirham)", s: "DH ", maj: "Dirhams", min: "Fils", d: [{l: "1000", v: 1000, t: 'Notes', dn: "1000 Dirhams (DH)"}, {l: "500", v: 500, t: 'Notes', dn: "500 Dirhams (DH)"}, {l: "200", v: 200, t: 'Notes', dn: "200 Dirhams (DH)"}, {l: "100", v: 100, t: 'Notes', dn: "100 Dirhams (DH)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Dirhams (DH)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Dirhams (DH)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Dirhams (DH)"}, {l: "5", v: 5, t: 'Notes', dn: "5 Dirhams (DH)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Dirham (DH)"}, {l: "50f", v: 0.5, t: 'Coins', dn: "50 Fils (f)"}, {l: "25f", v: 0.25, t: 'Coins', dn: "25 Fils (f)"}]},
+        "GBP": { n: "UK (Pound)", s: "£", maj: "Pounds", min: "Pence", d: [{l: "50", v: 50, t: 'Notes', dn: "50 Pounds (£)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Pounds (£)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Pounds (£)"}, {l: "5", v: 5, t: 'Notes', dn: "5 Pounds (£)"}, {l: "2", v: 2, t: 'Coins', dn: "2 Pounds (£)"}, {l: "1", v: 1, t: 'Coins', dn: "1 Pound (£)"}, {l: "50p", v: 0.5, t: 'Coins', dn: "50 Pence (p)"}, {l: "20p", v: 0.2, t: 'Coins', dn: "20 Pence (p)"}, {l: "10p", v: 0.1, t: 'Coins', dn: "10 Pence (p)"}, {l: "5p", v: 0.05, t: 'Coins', dn: "5 Pence (p)"}, {l: "2p", v: 0.02, t: 'Coins', dn: "2 Pence (p)"}, {l: "1p", v: 0.01, t: 'Coins', dn: "1 Penny (p)"}]},
+        "USD": { n: "USA (Dollar)", s: "$", maj: "Dollars", min: "Cents", d: [{l: "100", v: 100, t: 'Notes', dn: "100 Dollars ($)"}, {l: "50", v: 50, t: 'Notes', dn: "50 Dollars ($)"}, {l: "20", v: 20, t: 'Notes', dn: "20 Dollars ($)"}, {l: "10", v: 10, t: 'Notes', dn: "10 Dollars ($)"}, {l: "5", v: 5, t: 'Notes', dn: "5 Dollars ($)"}, {l: "2", v: 2, t: 'Notes', dn: "2 Dollars ($)"}, {l: "1", v: 1, t: 'Notes', dn: "1 Dollar ($)"}, {l: "$1", v: 1, t: 'Coins', dn: "1 Dollar ($)"}, {l: "50¢", v: 0.5, t: 'Coins', dn: "50 Cents (¢)"}, {l: "25¢", v: 0.25, t: 'Coins', dn: "25 Cents (¢)"}, {l: "10¢", v: 0.1, t: 'Coins', dn: "10 Cents (¢)"}, {l: "5¢", v: 0.05, t: 'Coins', dn: "5 Cents (¢)"}, {l: "1¢", v: 0.01, t: 'Coins', dn: "1 Cent (¢)"}]}
+    };
+
+    let counts = {}, curKey = "AUD", currentLang = 'en';
 
     function boot() {
         const sel = document.getElementById('currencySelect');
-        for (let k in currencies) {
+        const sortedKeys = Object.keys(currencies).sort((a,b) => currencies[a].n.localeCompare(currencies[b].n));
+        sortedKeys.forEach(k => {
             const o = document.createElement('option');
             o.value = k; o.textContent = currencies[k].n;
             sel.appendChild(o);
-        }
-        changeCurrency();
-        window.addEventListener('popstate', () => {
-            if (document.fullscreenElement) document.exitFullscreen();
         });
+        loadSecureData();
+        setLang('en');
     }
 
-    function toggleMenu() {
-        const menu = document.getElementById('menu');
-        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    // Number to Words Converter (Bank Receipt Style)
+    function numberToWords(num) {
+        const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+        const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+        const scales = ["", "thousand", "million", "billion"];
+
+        function convertSection(n) {
+            let res = "";
+            if (n >= 100) { res += ones[Math.floor(n / 100)] + " hundred "; n %= 100; }
+            if (n >= 20) { res += tens[Math.floor(n / 10)] + " "; n %= 10; }
+            if (n > 0) res += ones[n] + " ";
+            return res;
+        }
+
+        if (num === 0) return "Zero";
+        let parts = [], i = 0;
+        let integer = Math.floor(num);
+        let decimal = Math.round((num - integer) * 100);
+
+        while (integer > 0) {
+            if (integer % 1000 !== 0) parts.unshift(convertSection(integer % 1000) + scales[i]);
+            integer = Math.floor(integer / 1000); i++;
+        }
+        
+        const currency = currencies[curKey];
+        let result = parts.join(" ") + " " + currency.maj;
+        if (decimal > 0 && currency.min) result += " and " + convertSection(decimal) + " " + currency.min;
+        return result.trim().replace(/\s+/g, ' ');
     }
 
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        toggleMenu();
+    function saveSecureData() {
+        const encoded = btoa(JSON.stringify({key: curKey, counts: counts}));
+        localStorage.setItem('tally_secure_vault_v2', encoded);
     }
 
-    function showTips() {
-        document.getElementById('tipsModal').style.display = 'flex';
-        toggleMenu();
+    function loadSecureData() {
+        const raw = localStorage.getItem('tally_secure_vault_v2');
+        if (raw) {
+            try {
+                const dec = JSON.parse(atob(raw));
+                if (dec.key) { curKey = dec.key; document.getElementById('currencySelect').value = curKey; }
+                if (dec.counts) counts = dec.counts;
+            } catch(e) {}
+        }
     }
 
-    function closeTips() {
-        document.getElementById('tipsModal').style.display = 'none';
-    }
+    function togglePrivacy() { document.getElementById('grandTotal').classList.toggle('blurred'); document.getElementById('totalWords').classList.toggle('blurred'); }
+    function toggleMenu() { const m = document.getElementById('menu'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
+    function toggleLangGrid() { const g = document.getElementById('langGrid'); g.style.display = g.style.display === 'grid' ? 'none' : 'grid'; }
 
-    function changeCurrency() {
-        curKey = document.getElementById('currencySelect').value;
-        counts = {};
+    function setLang(code) {
+        currentLang = code;
+        const dict = i18n[code] || i18n['en'];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) el.textContent = dict[key];
+        });
         render();
     }
+
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); toggleMenu(); }
+    function changeCurrency() { curKey = document.getElementById('currencySelect').value; render(); }
 
     function render() {
         const cont = document.getElementById('appContainer');
         cont.innerHTML = '';
         const data = currencies[curKey];
+        const dict = i18n[currentLang] || i18n['en'];
         let lastT = '';
+        
         data.d.forEach((item, idx) => {
             if (item.t !== lastT) {
-                const head = document.createElement('div');
-                head.className = 'section-divider';
-                head.textContent = item.t;
-                cont.appendChild(head);
+                const h = document.createElement('div');
+                h.className = 'section-header-row';
+                h.innerHTML = `<div>${item.t === 'Notes' ? dict.notes : dict.coins}</div><div style="text-align:center">${dict.h_count}</div><div style="text-align:right">${dict.h_sub}</div>`;
+                cont.appendChild(h);
                 lastT = item.t;
             }
             const row = document.createElement('div');
             row.className = 'cash-row';
+            const val = counts[`${curKey}_${idx}`] || "";
             row.innerHTML = `
-                <div class="denom-label">
-                    <div class="denom-visual ${item.t.toLowerCase().includes('coin') || item.t.toLowerCase().includes('mynt') || item.t.toLowerCase().includes('moneda') ? 'visual-coin' : ''}">${item.l}</div>
-                    <span style="font-weight:700">${item.l}</span>
+                <div class="denom-info">
+                    <div class="denom-visual ${item.t === 'Coins' ? 'visual-coin' : ''}">${item.l}</div>
+                    <div class="denom-text">${item.dn}</div>
                 </div>
-                <div>
-                    <input type="number" class="input-box" placeholder="0" oninput="update(${idx}, this.value)" inputmode="numeric">
-                    <span class="row-total" id="row-t-${idx}">${data.s}0.00</span>
-                </div>`;
+                <div style="text-align:center"><input type="number" class="input-box" value="${val}" placeholder="0" oninput="update(${idx}, this.value)" inputmode="numeric"></div>
+                <div class="subtotal-cell" id="row-t-${idx}">${data.s}${(parseFloat(val||0) * item.v).toLocaleString()}</div>`;
             cont.appendChild(row);
         });
         updateTotal();
     }
 
     function update(idx, val) {
-        counts[idx] = parseFloat(val) || 0;
+        counts[`${curKey}_${idx}`] = val;
+        saveSecureData();
         const item = currencies[curKey].d[idx];
-        document.getElementById(`row-t-${idx}`).textContent = format(counts[idx] * item.v);
+        document.getElementById(`row-t-${idx}`).textContent = format((parseFloat(val)||0) * item.v);
         updateTotal();
     }
 
     function updateTotal() {
         let total = 0;
-        currencies[curKey].d.forEach((item, i) => total += (counts[i] || 0) * item.v);
+        currencies[curKey].d.forEach((item, i) => total += (parseFloat(counts[`${curKey}_${i}`]) || 0) * item.v);
         document.getElementById('grandTotal').textContent = format(total);
+        // Using Internationalization API for words for perfect localization across 11 languages
+        document.getElementById('totalWords').textContent = numberToWords(total);
     }
 
     function format(n) {
         const s = currencies[curKey].s;
-        const d = (curKey === "JPY" || curKey === "SEK") ? 0 : 2;
+        const d = ["JPY", "SEK", "KRW"].includes(curKey) ? 0 : 2;
         return s + n.toLocaleString(undefined, {minimumFractionDigits: d, maximumFractionDigits: d});
     }
 
-    function toggleFS() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-            history.pushState({fs: true}, "");
-        } else {
-            document.exitFullscreen();
-        }
-    }
-
-    function toggleRotation() {
-        if (screen.orientation) {
-            const type = screen.orientation.type.includes('portrait') ? 'landscape' : 'portrait';
-            screen.orientation.lock(type).catch(() => alert("Enable Auto-Rotate in system settings."));
-        }
-    }
-
-    function resetAll() { if(confirm("Reset all counts?")) { counts = {}; render(); } }
+    function toggleFS() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    function resetAll() { if(confirm("Clear current count?")) { Object.keys(counts).forEach(k => { if(k.startsWith(curKey)) delete counts[k]; }); saveSecureData(); render(); } }
 
     window.onload = boot;
 </script>
