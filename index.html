@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ThuGGo Cash</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -42,7 +43,7 @@
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 3000; }
         .modal-content { background: var(--card); color: var(--text); padding: 25px; border-radius: 15px; width: 90%; max-width: 450px; }
 
-        /* Pro Scanner UI */
+        /* Pro AI Scanner */
         #camera-wrapper { position: relative; width: 100%; height: 350px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
         #video-feed { width: 100%; height: 100%; object-fit: cover; }
         .detection-box { 
@@ -53,7 +54,7 @@
 
         .container { max-width: 600px; margin: 0 auto; padding: 10px; }
         
-        /* RESTORED HEADERS */
+        /* RESTORED HEADERS: Count & Total */
         .section-header-row {
             display: grid; grid-template-columns: 1fr 1fr 1fr;
             padding: 15px 10px 5px; font-size: 0.7rem; font-weight: 800;
@@ -93,6 +94,7 @@
 <div id="aiModal" class="modal" onclick="closeModal('aiModal')">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3 style="margin-top:0">Pro AI Scanner <span class="pro-badge">PRO</span></h3>
+        <p style="font-size:0.7rem; margin-bottom:10px">Fit coins evenly inside the box for AI detection.</p>
         <div id="camera-wrapper">
             <video id="video-feed" autoplay playsinline></video>
             <div class="detection-box"></div>
@@ -114,18 +116,17 @@
 
 <script>
     const languages = {
-        "en": { name: "English", ai_scanner: "Pro AI Scanner", language: "Language", dark_mode: "Dark Mode", tips: "Pro-Tips", reset: "Reset", grand_total: "GRAND TOTAL", banknote: "Banknote", coin: "Coin", count: "Count", total_col: "Total" },
-        "hi": { name: "हिन्दी", ai_scanner: "प्रो AI स्कैनर", language: "भाषा", dark_mode: "डार्क मोड", tips: "सुझाव", reset: "रीसेट", grand_total: "कुल योग", banknote: "नोट", coin: "सिक्का", count: "गिनती", total_col: "कुल" },
-        // ... (All other 9 languages maintained internally)
-        "es": { name: "Español", banknote: "Billete", coin: "Moneda", count: "Cantidad", total_col: "Total" },
-        "fr": { name: "Français", banknote: "Billet", coin: "Pièce", count: "Nombre", total_col: "Total" },
-        "de": { name: "Deutsch", banknote: "Banknote", coin: "Münze", count: "Anzahl", total_col: "Gesamt" },
-        "zh": { name: "中文", banknote: "纸币", coin: "硬币", count: "数量", total_col: "总额" },
-        "ja": { name: "日本語", banknote: "紙幣", coin: "硬貨", count: "枚数", total_col: "合計" },
-        "ar": { name: "العربية", banknote: "ورقة", coin: "عملة", count: "العدد", total_col: "المجموع" },
-        "ru": { name: "Русский", banknote: "Банкнота", coin: "Монета", count: "Кол-во", total_col: "Итого" },
-        "pt": { name: "Português", banknote: "Cédula", coin: "Moeda", count: "Qtd", total_col: "Total" },
-        "ms": { name: "Melayu", banknote: "Wang Kertas", coin: "Syiling", count: "Bilangan", total_col: "Jumlah" }
+        "en": { name: "English", ai_scanner: "Pro AI Scanner", language: "Language", dark_mode: "Dark Mode", tips: "Pro-Tips", reset: "Reset", grand_total: "GRAND TOTAL", banknote: "Banknote", coin: "Coin", count: "Count", total: "Total" },
+        "hi": { name: "हिन्दी", ai_scanner: "प्रो AI स्कैनर", language: "भाषा", dark_mode: "डार्क मोड", tips: "सुझाव", reset: "रीसेट", grand_total: "कुल योग", banknote: "नोट", coin: "सिक्का", count: "गिनती", total: "कुल" },
+        "es": { name: "Español", banknote: "Billete", coin: "Moneda", count: "Cuenta", total: "Total" },
+        "fr": { name: "Français", banknote: "Billet", coin: "Pièce", count: "Nombre", total: "Total" },
+        "de": { name: "Deutsch", banknote: "Banknote", coin: "Münze", count: "Anzahl", total: "Gesamt" },
+        "zh": { name: "中文", banknote: "纸币", coin: "硬币", count: "数量", total: "总额" },
+        "ja": { name: "日本語", banknote: "紙幣", coin: "硬貨", count: "枚数", total: "合計" },
+        "ar": { name: "العربية", banknote: "ورقة", coin: "عملة", count: "العدد", total: "المجموع" },
+        "ru": { name: "Русский", banknote: "Банкнота", coin: "Монета", count: "Кол-во", total: "Итого" },
+        "pt": { name: "Português", banknote: "Cédula", coin: "Moeda", count: "Qtd", total: "Total" },
+        "ms": { name: "Melayu", banknote: "Wang Kertas", coin: "Syiling", count: "Bilangan", total: "Jumlah" }
     };
 
     const currencies = {
@@ -167,7 +168,6 @@
             langDiv.appendChild(b);
         }
         
-        // Local Storage Check
         const saved = localStorage.getItem('thuggo_counts');
         if (saved) counts = JSON.parse(saved);
 
@@ -202,7 +202,7 @@
                 header.className = 'section-header-row';
                 const typeLabel = item.t.toLowerCase().includes('banknote') ? t.banknote : t.coin;
                 // RESTORED UI HEADERS: Count and Total
-                header.innerHTML = `<div>${typeLabel}s</div><div style="text-align:center">${t.count}</div><div style="text-align:center">${t.total_col} (${data.s})</div>`;
+                header.innerHTML = `<div>${typeLabel}s</div><div style="text-align:center">${t.count}</div><div style="text-align:center">${t.total} (${data.s})</div>`;
                 cont.appendChild(header);
                 lastT = item.t;
             }
@@ -259,14 +259,14 @@
         const video = document.getElementById('video-feed');
         navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
             .then(stream => { video.srcObject = stream; })
-            .catch(err => alert("Camera error: " + err));
+            .catch(err => alert("Camera permission denied."));
     }
 
     function toggleMenu() { const m = document.getElementById('menu'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
     function openModal(id) { document.getElementById(id).style.display = 'flex'; toggleMenu(); }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function toggleDarkMode() { document.body.classList.toggle('dark-mode'); toggleMenu(); }
-    function resetAll() { if(confirm("Clear everything?")) { counts = {}; localStorage.removeItem('thuggo_counts'); render(); } }
+    function resetAll() { if(confirm("Clear all data?")) { counts = {}; localStorage.removeItem('thuggo_counts'); render(); } }
 
     window.onload = boot;
 </script>
